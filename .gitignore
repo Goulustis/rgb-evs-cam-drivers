@@ -1,0 +1,7 @@
+*.png
+*.raw
+*.json
+*.pyc
+*.h5
+*.npy
+ev_recordings/*
