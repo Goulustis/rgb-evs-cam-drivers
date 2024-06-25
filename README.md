@@ -1,2 +1,2 @@
 # rgb-evs-cam-drivers
-driver to run rgb and event camera together
+runs a prophesee event camera and a flir rgb camera
