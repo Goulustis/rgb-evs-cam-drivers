@@ -56,10 +56,10 @@ def main(input_dir, trigger_f=None):
     if trigger_f is not None:
       trig = np.loadtxt(trigger_f)
       inp_ls = inp_ls[:(len(trig) + 3)]
-    # parallel_map(map_fn, inp_ls, show_pbar=True, desc="processing raw")
+    parallel_map(map_fn, inp_ls, show_pbar=True, desc="processing raw")
     
-    for inp in tqdm(inp_ls, desc="processing"):
-       map_fn(inp)
+    # for inp in tqdm(inp_ls, desc="processing"):
+    #    map_fn(inp)
 
     # os.system(f"ffmpeg -framerate 60 -i {dst_dir}/%05d.png -c:v libx264 -frames:v 5000 {osp.basename(input_dir)}.mp4")
 
