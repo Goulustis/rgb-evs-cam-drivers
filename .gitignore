@@ -4,4 +4,5 @@
 *.pyc
 *.h5
 *.npy
+*.zip
 ev_recordings/*
