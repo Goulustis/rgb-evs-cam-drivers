@@ -14,7 +14,6 @@ def start_camera_scripts():
     # Start evs.py as a subprocess
     evs_process = subprocess.Popen(evs_command)
     
-    time.sleep(0.05)
 
     # Start rgb.py as a subprocess
     rgb_process = subprocess.Popen(rgb_command)
