@@ -2,7 +2,7 @@ import PySpin
 import os
 from datetime import datetime
 
-from config import FPS, SCENE, RUN_DURATION, RGB_SAVE_DIR, GREEN, YELLOW, RESET
+from config import FPS, SCENE, RUN_DURATION, RGB_SAVE_DIR, GREEN, YELLOW, RESET, EXP_TIME
 
 
 TOTAL_FRAMES_SAVED = 0
@@ -17,7 +17,7 @@ def save_raw_image(image, folder):
     global TOTAL_FRAMES_SAVED
     TOTAL_FRAMES_SAVED += 1
 
-def main(desired_fps=FPS, duration_seconds=RUN_DURATION, save_folder='designated_folder'):
+def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save_folder='designated_folder'):
     # Ensure the save folder exists
     os.makedirs(save_folder, exist_ok=True)
 
@@ -30,6 +30,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, save_folder='designated
         # Initialize and configure the camera
         cam.Init()
         cam.AcquisitionFrameRateEnable.SetValue(True)
+        cam.ExposureTime.SetValue(exp_time)
         cam.AcquisitionFrameRate.SetValue(desired_fps)
         print(f"{GREEN}RGB CAMERA STARTED!! RUNNING AT {desired_fps} fps for {duration_seconds} sec {RESET}")
 
