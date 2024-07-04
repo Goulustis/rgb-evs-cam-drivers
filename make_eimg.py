@@ -50,7 +50,7 @@ def main():
     event_f = f"{EVS_SAVE_DIR}/{SCENE}/events.h5"
     save_dir = f"eimgs/{SCENE}"
     # st_triggers = np.loadtxt(osp.join(osp.dirname(event_f), "st_triggers.txt"))
-    n_frames = 120 
+    n_frames = 900 
     # st_triggers = st_triggers[: n_frames + 1]
     os.makedirs(save_dir, exist_ok=True)
 
