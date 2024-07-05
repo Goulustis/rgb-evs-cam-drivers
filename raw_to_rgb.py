@@ -8,7 +8,7 @@ import glob
 import cv2
 from concurrent import futures
 from functools import partial
-from config import RGB_SAVE_DIR, SCENE
+from config import RGB_SAVE_DIR, SCENE, USE_SIXTEEN_BIT
 from tqdm import tqdm
 
 H, W = 1080, 1440
@@ -23,11 +23,16 @@ def parallel_map(f, iterable, max_threads=None, show_pbar=False, desc="", **kwar
       results = executor.map(f, iterable, **kwargs)
     return list(results)
 
-def raw_to_rgb(raw_f):
+def raw_to_rgb(raw_f, sixteen_bit=USE_SIXTEEN_BIT, cnst=65536):
+    dtype = np.uint8 if not sixteen_bit else np.uint16
     with open(raw_f, "rb") as f:
-       img_data = np.frombuffer(f.read(), np.uint8, H*W).reshape(H, W)
+       img_data = np.frombuffer(f.read(), dtype, H*W).reshape(H, W)
        img = cv2.cvtColor(img_data, cv2.COLOR_BAYER_BG2BGR)
     
+    if sixteen_bit:
+       img = img.astype(np.float32)/cnst
+       img = (np.clip(img, 0, 1)*255).astype(np.uint8)
+
     return img
 
 def transform_img_and_save(inp, dst_dir):
@@ -57,19 +62,17 @@ def main(input_dir, trigger_f=None):
       trig = np.loadtxt(trigger_f)
       inp_ls = inp_ls[:(len(trig) + 3)]
     parallel_map(map_fn, inp_ls, show_pbar=True, desc="processing raw")
-    
-    # for inp in tqdm(inp_ls, desc="processing"):
-    #    map_fn(inp)
-
-    # os.system(f"ffmpeg -framerate 60 -i {dst_dir}/%05d.png -c:v libx264 -frames:v 5000 {osp.basename(input_dir)}.mp4")
-
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_dir", default=f"{RGB_SAVE_DIR}/{SCENE}")
-    parser.add_argument("-t", "--trigger_f", default=None) #default="/home/matthew/projects/ecam_code/raw_events/soccer/mean_triggers.txt")
-    # parser.add_argument("-i", "--input_dir", default="blur_calib_checker")
-    # parser.add_argument("-t", "--trigger_f", default="/home/matthew/projects/ecam_code/raw_events/blur_calib_checker/mean_triggers.txt")
+    parser.add_argument("-t", "--trigger_f", default=None) 
     args = parser.parse_args()
     main(args.input_dir, args.trigger_f)
+# img = raw_to_rgb("SingleCapture_12bit.raw", True).astype(np.float32)
+# print(np.percentile(img, 95))
+# img = img / np.percentile(img, 95)
+# 
+# import matplotlib.pyplot as plt
+# plt.imshow(img[...,::-1])
+# plt.show()
