@@ -1,8 +1,11 @@
 import PySpin
 import os
 from datetime import datetime
+import json
+import os.path as osp
 
-from config import FPS, SCENE, RUN_DURATION, RGB_SAVE_DIR, GREEN, YELLOW, RESET, EXP_TIME
+from config import (FPS, SCENE, RUN_DURATION, RGB_SAVE_DIR, 
+                    GREEN, YELLOW, RESET, EXP_TIME, USE_SIXTEEN_BIT, GAIN)
 
 
 TOTAL_FRAMES_SAVED = 0
@@ -32,29 +35,17 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         cam.AcquisitionFrameRateEnable.SetValue(True)
         cam.ExposureTime.SetValue(exp_time)
         cam.AcquisitionFrameRate.SetValue(desired_fps)
-        gain_node = PySpin.CFloatPtr(nodemap.GetNode("Gain"))
-        gain_node.SetValue(6.9)
 
-        ############################## set to 12 bit
         nodemap = cam.GetNodeMap()
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode("Gain"))
+        gain_node.SetValue(GAIN)
+
         # Access the PixelFormat enumeration node
-        node_pixel_format = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
-        print(PySpin.IsAvailable(node_pixel_format), PySpin.IsWritable(node_pixel_format))
-        if PySpin.IsAvailable(node_pixel_format) and PySpin.IsWritable(node_pixel_format):
-            # Retrieve the 12-bit pixel format node
-            node_pixel_format_12bit = node_pixel_format.GetEntryByName("BayerRG16")
-            if PySpin.IsAvailable(node_pixel_format_12bit) and PySpin.IsReadable(node_pixel_format_12bit):
-                pixel_format_12bit = node_pixel_format_12bit.GetValue()
-                # Set pixel format to 12-bit
-                node_pixel_format.SetIntValue(pixel_format_12bit)
-                print("Pixel format set to 12-bit.")
-            else:
-                print("12-bit pixel format not available.")
-                return
-        else:
-            print("Pixel format not available or not writable.")
-            return
-        ############################333
+        if USE_SIXTEEN_BIT:
+            node_pixel_format = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
+            node_pixel_format_16bit = node_pixel_format.GetEntryByName("BayerRG16")
+            pixel_format_16bit = node_pixel_format_16bit.GetValue()
+            node_pixel_format.SetIntValue(pixel_format_16bit)
         
         print(f"{GREEN}RGB CAMERA STARTED!! RUNNING AT {desired_fps} fps for {duration_seconds} sec {RESET}")
 
@@ -91,6 +82,10 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         system.ReleaseInstance()
 
     print(f"{GREEN}Total frames saved: {TOTAL_FRAMES_SAVED} {RESET}")
+    with open(osp.join(save_dir, "metadata.json"), "w") as f:
+        metadata = {"exposure_time": exp_time,
+                    "is_sixteen_bit":USE_SIXTEEN_BIT}
+        json.dump(metadata, f, indent=2)
 
 if __name__ == '__main__':
 
