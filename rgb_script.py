@@ -32,6 +32,30 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         cam.AcquisitionFrameRateEnable.SetValue(True)
         cam.ExposureTime.SetValue(exp_time)
         cam.AcquisitionFrameRate.SetValue(desired_fps)
+        gain_node = PySpin.CFloatPtr(nodemap.GetNode("Gain"))
+        gain_node.SetValue(6.9)
+
+        ############################## set to 12 bit
+        nodemap = cam.GetNodeMap()
+        # Access the PixelFormat enumeration node
+        node_pixel_format = PySpin.CEnumerationPtr(nodemap.GetNode("PixelFormat"))
+        print(PySpin.IsAvailable(node_pixel_format), PySpin.IsWritable(node_pixel_format))
+        if PySpin.IsAvailable(node_pixel_format) and PySpin.IsWritable(node_pixel_format):
+            # Retrieve the 12-bit pixel format node
+            node_pixel_format_12bit = node_pixel_format.GetEntryByName("BayerRG16")
+            if PySpin.IsAvailable(node_pixel_format_12bit) and PySpin.IsReadable(node_pixel_format_12bit):
+                pixel_format_12bit = node_pixel_format_12bit.GetValue()
+                # Set pixel format to 12-bit
+                node_pixel_format.SetIntValue(pixel_format_12bit)
+                print("Pixel format set to 12-bit.")
+            else:
+                print("12-bit pixel format not available.")
+                return
+        else:
+            print("Pixel format not available or not writable.")
+            return
+        ############################333
+        
         print(f"{GREEN}RGB CAMERA STARTED!! RUNNING AT {desired_fps} fps for {duration_seconds} sec {RESET}")
 
 
