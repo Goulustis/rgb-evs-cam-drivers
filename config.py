@@ -8,6 +8,7 @@ FPS = 30
 # EXP_TIME = 14995  # default exposure time in micro sec
 EXP_TIME = 30000
 USE_SIXTEEN_BIT = True
+GAIN=6.9
 
 ## Whole system config
 RUN_DURATION = 20  # in seconds
