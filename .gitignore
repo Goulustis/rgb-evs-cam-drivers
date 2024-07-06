@@ -8,4 +8,5 @@
 *.bin
 *.db*
 *.txt
+*.ini
 ev_recordings/*
