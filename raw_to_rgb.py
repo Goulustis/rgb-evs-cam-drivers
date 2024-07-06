@@ -96,8 +96,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     metadatjson_f = osp.join(args.input_dir, "metadata.json")
-    with open(metadatjson_f, "r") as f:
-      is_sixteen = json.load(f)["is_sixteen_bit"]
+    is_sixteen = False
+    if osp.exists(metadatjson_f):
+      with open(metadatjson_f, "r") as f:
+        is_sixteen = json.load(f)["is_sixteen_bit"]
     
     if is_sixteen:
       main_sixteen(args.input_dir, args.trigger_f)
