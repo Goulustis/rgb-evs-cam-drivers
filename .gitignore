@@ -9,4 +9,5 @@
 *.db*
 *.txt
 *.ini
+*.mp4
 ev_recordings/*
