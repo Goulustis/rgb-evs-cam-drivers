@@ -10,4 +10,5 @@
 *.txt
 *.ini
 *.mp4
+data_rgb/*
 ev_recordings/*
