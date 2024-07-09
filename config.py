@@ -1,5 +1,5 @@
 ## data saving config
-SCENE = "lab_c1"
+SCENE = "jeff_v9"
 RGB_SAVE_DIR = "data_rgb"
 EVS_SAVE_DIR = "ev_recordings"
 
@@ -13,7 +13,9 @@ GAIN=6.9
 ## Whole system config
 RUN_DURATION = 20  # in seconds
 
-USE_BIAS_CONFIG = True
+## Event Camera Config
+USE_BIAS_CONFIG=True
+BIAS_FILE="bias_configs/tuned_biases.bias"
 
 GREEN = '\033[32m'
 YELLOW = '\033[33m'

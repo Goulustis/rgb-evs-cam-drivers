@@ -8,7 +8,7 @@ from tqdm import tqdm
 import time
 from utils import read_bias, set_all_biases, write_bias
 
-from config import SCENE, RUN_DURATION, EVS_SAVE_DIR, USE_BIAS_CONFIG
+from config import SCENE, RUN_DURATION, EVS_SAVE_DIR, USE_BIAS_CONFIG, BIAS_FILE
 
 
 trigger_type = np.dtype({'names':['p','t','id'], 
@@ -16,9 +16,8 @@ trigger_type = np.dtype({'names':['p','t','id'],
                          'offsets':[0,8,16], 
                          'itemsize':24})
 
-# save_dir = "raw_events/calib_checker"
+
 save_dir = f"{EVS_SAVE_DIR}/{SCENE}"
-# save_dir = "raw_events/scratch"
 os.makedirs(save_dir, exist_ok=True)
 def main():
     sec = RUN_DURATION
@@ -29,11 +28,14 @@ def main():
 
     device = initiate_device("", **{"use_external_triggers":[0]})
     bias_obj = device.get_i_ll_biases()
-    if osp.exists("biases.bias") and USE_BIAS_CONFIG:
-        bias_config = read_bias("biases.bias")
-        set_all_biases(bias_obj, bias_config)
-        write_bias(bias_config, osp.join(save_dir, "bias.bias"))
-        
+    if USE_BIAS_CONFIG:
+
+        if osp.exists(BIAS_FILE):
+            bias_config = read_bias("biases.bias")
+            set_all_biases(bias_obj, bias_config)
+            write_bias(bias_config, osp.join(save_dir, "bias.bias"))
+        else:
+            assert 0, f"configured to use bias file, but {BIAS_FILE} does not exist!"
 
 
     e_iter = EventsIterator.from_device(device, delta_t=50000, max_duration=max_time)
@@ -41,11 +43,8 @@ def main():
 
     height, width = e_iter.get_size()
     e_writer = H5EventsWriter(event_path, height=height, width=width, compression_backend="zstandard")
-    is_rgb_started = False 
 
     is_printed = False
-    trigger_ls = []
-    event_ls = []
     pbar = tqdm(total=max_time)
     print("camera running")
     print("saving triggers to", trigger_save_path)
@@ -55,6 +54,7 @@ def main():
             if not is_printed:
                 is_printed=True 
                 print("event camera running")
+            # NOTE: the triggers doesn't get cleared, explicitly clearing is needed to get rid of the triggers
             triggers = e_iter.reader.get_ext_trigger_events()
             
             if len(triggers) > 0:
@@ -65,7 +65,6 @@ def main():
                     
         if evs.size != 0:
             e_writer.write(evs)
-            # event_ls.append(evs)
 
             pbar.n = evs["t"].max()
             pbar.refresh()
