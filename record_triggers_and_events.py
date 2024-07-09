@@ -31,7 +31,7 @@ def main():
     if USE_BIAS_CONFIG:
 
         if osp.exists(BIAS_FILE):
-            bias_config = read_bias("biases.bias")
+            bias_config = read_bias(BIAS_FILE)
             set_all_biases(bias_obj, bias_config)
             write_bias(bias_config, osp.join(save_dir, "bias.bias"))
         else:
