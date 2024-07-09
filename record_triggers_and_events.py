@@ -58,12 +58,11 @@ def main():
             triggers = e_iter.reader.get_ext_trigger_events()
             
             if len(triggers) > 0:
-              print("seeing triggers")
-              # do something with the triggers here
-            #   trig_writer.write(triggers)
-              # trigger_ls.append(np.array(triggers))
-              # e_iter.reader.clear_ext_trigger_events()
-        
+                print("seeing triggers")
+            else:
+                print("not seeing triggers")
+
+                    
         if evs.size != 0:
             e_writer.write(evs)
             # event_ls.append(evs)
