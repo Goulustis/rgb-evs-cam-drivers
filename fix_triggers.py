@@ -87,11 +87,14 @@ def save_alt_trigger_options(inj_ts:np.ndarray, inj_ps:np.ndarray, trig_fold:str
 
     np.savetxt(osp.join(trig_fold, "st_triggers.txt"), st_ts)
     np.savetxt(osp.join(trig_fold, "end_triggers.txt"), end_ts)
+
+    n_st, n_end = len(st_ts), len(end_ts)
+    n_trigs = min(n_st, n_end)
+    mean_ts = ((st_ts[:n_trigs] + end_ts[:n_trigs])/2).astype(int)
+    np.savetxt(osp.join(trig_fold, "mean_triggers.txt"), mean_ts)
     
-    try:
-        mean_ts = ((st_ts + end_ts)/2).astype(int)
-        np.savetxt(osp.join(trig_fold, "mean_triggers.txt"), mean_ts)
-    except:
+    if n_st != n_end:
+        print("n_start", len(st_ts), "n_end", len(end_ts), "are different")
         print("only starting ts are trust worthy")
     
 
