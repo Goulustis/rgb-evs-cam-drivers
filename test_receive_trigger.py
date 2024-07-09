@@ -9,7 +9,7 @@ import os.path as osp
 # Run camera and listen for triggers 
 
 def main():
-    max_time = 65*1e6
+    max_time = 10*1e6
     e_iter = EventsIterator("", delta_t=10000, max_duration=max_time, **{"use_external_triggers":[0]})
     print("camera running")
     
@@ -28,8 +28,7 @@ def main():
               print("trigger received")
               
               # do something with triggers
-              # e_iter.reader.clear_ext_trigger_events()
-    dev_dir = "raw_events/dev_trig"
+    dev_dir = "tmp/dev_triggers"
     os.makedirs(dev_dir, exist_ok=True)
     np.save(osp.join(dev_dir, "triggers.npy"), e_iter.reader.get_ext_trigger_events())
 
