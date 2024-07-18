@@ -8,7 +8,7 @@ from tqdm import tqdm
 import time
 from utils import read_bias, set_all_biases, write_bias
 
-from config import SCENE, RUN_DURATION, EVS_SAVE_DIR, USE_BIAS_CONFIG, BIAS_FILE
+from config import SCENE, RUN_DURATION, EVS_SAVE_DIR, USE_BIAS_CONFIG, BIAS_FILE, RED, GREEN, RESET
 
 
 trigger_type = np.dtype({'names':['p','t','id'], 
@@ -58,9 +58,9 @@ def main():
             triggers = e_iter.reader.get_ext_trigger_events()
             
             if len(triggers) > 0:
-                print("seeing triggers")
+                print(f"{GREEN}seeing triggers{RESET}")
             else:
-                print("not seeing triggers")
+                print(f"{RED}not seeing triggers{RESET}")
 
                     
         if evs.size != 0:
