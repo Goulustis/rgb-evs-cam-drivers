@@ -12,7 +12,7 @@ TOTAL_FRAMES_SAVED = 0
 
 def save_raw_image(image, folder):
     """Save an image in raw format to the specified folder with a microsecond timestamp as the filename."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")  # Format: YYYYMMDD_HHMMSS_microseconds
+    timestamp = image.GetTimeStamp()  # in microsec
     filename = f'raw_image_{timestamp}.raw'
     path = os.path.join(folder, filename)
     image.Save(path)
@@ -58,6 +58,8 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         start_time = datetime.now().timestamp()
         end_time = start_time + duration_seconds
 
+        img_idxs = 0
+        successes = []
         while datetime.now().timestamp() < end_time:
             # Retrieve the next available image
             image_result = cam.GetNextImage()
@@ -67,6 +69,8 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
             else:
                 # Save the raw image to the specified folder with a microsecond timestamp in the filename
                 save_raw_image(image_result, save_folder)
+                successes.append(img_idxs)
+            img_idxs += 1
 
             # Release the image to prepare for the next one
             image_result.Release()
@@ -84,7 +88,8 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
     print(f"{GREEN}Total frames saved: {TOTAL_FRAMES_SAVED} {RESET}")
     with open(osp.join(save_dir, "metadata.json"), "w") as f:
         metadata = {"exposure_time": exp_time,
-                    "is_sixteen_bit":USE_SIXTEEN_BIT}
+                    "is_sixteen_bit":USE_SIXTEEN_BIT,
+                    "success_idxs": successes}
         json.dump(metadata, f, indent=2)
 
 if __name__ == '__main__':
