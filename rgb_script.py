@@ -52,15 +52,15 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
 
         cam.AcquisitionMode.SetValue(PySpin.AcquisitionMode_Continuous)
 
-        # Start capturing images
-        cam.BeginAcquisition()
-
         start_time = datetime.now().timestamp()
         end_time = start_time + duration_seconds
 
         img_idxs = 0
         successes = []
         time_stamps = []
+        
+        # Start capturing images
+        cam.BeginAcquisition()
         while datetime.now().timestamp() < end_time:
             # Retrieve the next available image
             image_result = cam.GetNextImage()
