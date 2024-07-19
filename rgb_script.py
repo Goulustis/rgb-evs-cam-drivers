@@ -60,6 +60,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
 
         img_idxs = 0
         successes = []
+        time_stamps = []
         while datetime.now().timestamp() < end_time:
             # Retrieve the next available image
             image_result = cam.GetNextImage()
@@ -70,6 +71,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
                 # Save the raw image to the specified folder with a microsecond timestamp in the filename
                 save_raw_image(image_result, save_folder)
                 successes.append(img_idxs)
+                time_stamps.append(image_result.GetTimeStamp())
             img_idxs += 1
 
             # Release the image to prepare for the next one
