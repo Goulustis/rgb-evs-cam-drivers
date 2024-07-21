@@ -39,6 +39,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         nodemap = cam.GetNodeMap()
         gain_node = PySpin.CFloatPtr(nodemap.GetNode("Gain"))
         gain_node.SetValue(GAIN)
+        cam.AcquisitionMode.SetValue(PySpin.AcquisitionMode_Continuous)
 
         # Access the PixelFormat enumeration node
         if USE_SIXTEEN_BIT:
@@ -47,10 +48,6 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
             pixel_format_16bit = node_pixel_format_16bit.GetValue()
             node_pixel_format.SetIntValue(pixel_format_16bit)
         
-        print(f"{GREEN}RGB CAMERA STARTED!! RUNNING AT {desired_fps} fps for {duration_seconds} sec {RESET}")
-
-
-        cam.AcquisitionMode.SetValue(PySpin.AcquisitionMode_Continuous)
 
         start_time = datetime.now().timestamp()
         end_time = start_time + duration_seconds
@@ -61,7 +58,9 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
         
         # Start capturing images
         cam.BeginAcquisition()
-        while datetime.now().timestamp() < end_time:
+        print(f"{GREEN}RGB CAMERA STARTED!! RUNNING AT {desired_fps} fps for {duration_seconds} sec {RESET}")
+        total_frames = FPS*duration_seconds
+        while img_idxs <= total_frames:
             # Retrieve the next available image
             image_result = cam.GetNextImage()
 
@@ -76,7 +75,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
 
             # Release the image to prepare for the next one
             image_result.Release()
-
+            print(f"rgb: {img_idxs}/{total_frames}")
         print(f"{YELLOW} RGB: Reached the specified duration of {duration_seconds} seconds. Stopping.{RESET}")
 
     finally:
