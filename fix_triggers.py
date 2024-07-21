@@ -2,8 +2,9 @@ import numpy as np
 import os.path as osp
 import matplotlib.pyplot as plt
 import pprint
+import json
 
-from config import EVS_SAVE_DIR, SCENE
+from config import EVS_SAVE_DIR, SCENE, RGB_SAVE_DIR
 
 def fill_triggers(fixed_trigs, ret_ones_only=False):
     """
@@ -81,20 +82,41 @@ def fill_triggers(fixed_trigs, ret_ones_only=False):
         return fixed_ts, fixed_ps
             
 
+def rgb_trigger_fix(*nargs):
+    rgb_meta_f = osp.join(RGB_SAVE_DIR, SCENE, "metadata.json")
+    if not osp.exists(rgb_meta_f):
+        return nargs
+    
+    with open(rgb_meta_f, "r") as f:
+        data = json.load(f)
+    
+    if data.get("success_idxs") is None:
+        return nargs
+
+    good_idxs = np.array(data["success_idxs"])
+    min_len = min([len(e) for e in nargs])
+    good_idxs = good_idxs[good_idxs < min_len]
+
+    nargs = [e[good_idxs] for e in nargs]
+    return nargs
+
+
 def save_alt_trigger_options(inj_ts:np.ndarray, inj_ps:np.ndarray, trig_fold:str):
     st_ts = inj_ts[inj_ps == 1]
     end_ts = inj_ts[inj_ps == 0]
 
-    np.savetxt(osp.join(trig_fold, "st_triggers.txt"), st_ts)
-    np.savetxt(osp.join(trig_fold, "end_triggers.txt"), end_ts)
-
     n_st, n_end = len(st_ts), len(end_ts)
     n_trigs = min(n_st, n_end)
     mean_ts = ((st_ts[:n_trigs] + end_ts[:n_trigs])/2).astype(int)
+
+    st_ts, end_ts, mean_ts = rgb_trigger_fix(st_ts, end_ts, mean_ts)
+
+    np.savetxt(osp.join(trig_fold, "st_triggers.txt"), st_ts)
+    np.savetxt(osp.join(trig_fold, "end_triggers.txt"), end_ts)
     np.savetxt(osp.join(trig_fold, "mean_triggers.txt"), mean_ts)
     
     if n_st != n_end:
-        print("n_start", len(st_ts), "n_end", len(end_ts), "are different")
+        print("n_start", n_st, "n_end", n_end, "are different")
         print("only starting ts are trust worthy")
     
 
