@@ -24,6 +24,24 @@ def parallel_map(f, iterable, max_threads=None, show_pbar=False, desc="", **kwar
       results = executor.map(f, iterable, **kwargs)
     return list(results)
 
+
+def to_srgb(linear_rgb):
+    """
+    Convert linear RGB values to sRGB values.
+
+    Parameters:
+    linear_rgb (np.ndarray): The linear RGB values to convert. Values should be in the range [0, 1].
+
+    Returns:
+    np.ndarray: The corresponding sRGB values.
+    """
+    # Apply the sRGB conversion formula
+    # srgb = np.where(linear_rgb <= 0.0031308, 
+    #                 linear_rgb * 12.92, 
+    #                 1.055 * (linear_rgb ** (1.0 / 2.4)) - 0.055)
+    srgb = linear_rgb**(1/2.2)
+    return srgb
+
 def raw_to_rgb(raw_f, sixteen_bit=USE_SIXTEEN_BIT, cnst=65536):
     dtype = np.uint8 if not sixteen_bit else np.uint16
     with open(raw_f, "rb") as f:
@@ -32,7 +50,8 @@ def raw_to_rgb(raw_f, sixteen_bit=USE_SIXTEEN_BIT, cnst=65536):
     
     if sixteen_bit:
       img = img.astype(np.float32)/cnst
-      img = (np.clip(img, 0, 1)*255).astype(np.uint8)
+      # img = (np.clip(img, 0, 1)*255).astype(np.uint8)
+      img = (to_srgb(np.clip(img, 0, 1))*255).astype(np.uint8)
 
     return img
 
