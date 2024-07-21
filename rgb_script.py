@@ -54,6 +54,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
 
         img_idxs = 0
         successes = []
+        failed = []
         time_stamps = []
         
         # Start capturing images
@@ -66,6 +67,7 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
 
             if image_result.IsIncomplete():
                 print("Image incomplete with image status", image_result.GetImageStatus())
+                failed.append(img_idxs)
             else:
                 # Save the raw image to the specified folder with a microsecond timestamp in the filename
                 save_raw_image(image_result, save_folder)
@@ -90,7 +92,8 @@ def main(desired_fps=FPS, duration_seconds=RUN_DURATION, exp_time=EXP_TIME, save
     with open(osp.join(save_dir, "metadata.json"), "w") as f:
         metadata = {"exposure_time": exp_time,
                     "is_sixteen_bit":USE_SIXTEEN_BIT,
-                    "success_idxs": successes}
+                    "success_idxs": successes,
+                    "failed": failed}
         json.dump(metadata, f, indent=2)
 
 if __name__ == '__main__':
