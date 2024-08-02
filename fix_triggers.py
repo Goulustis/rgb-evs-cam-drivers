@@ -121,8 +121,8 @@ def check_st_end_gap(st_ts, end_ts):
     min_len = min(len(st_ts), len(end_ts))
     st_ts, end_ts = st_ts[:min_len], end_ts[:min_len]
     cond = (end_ts - st_ts) > 0
-    st_ts, end_ts = st_ts[cond], end_ts[cond]
-    diffs = end_ts - st_ts
+    st_ts_tmp, end_ts_tmp = st_ts[cond], end_ts[cond]
+    diffs = end_ts_tmp - st_ts_tmp
     med_diff = np.median(diffs)
     end_ts[0] = st_ts[0] + med_diff
 
