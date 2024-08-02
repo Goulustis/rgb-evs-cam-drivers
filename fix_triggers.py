@@ -3,6 +3,7 @@ import os.path as osp
 import matplotlib.pyplot as plt
 import pprint
 import json
+import glob
 
 from config import EVS_SAVE_DIR, SCENE, RGB_SAVE_DIR
 
@@ -82,28 +83,57 @@ def fill_triggers(fixed_trigs, ret_ones_only=False):
         return fixed_ts, fixed_ps
             
 
+
+def get_rgb_ts():
+    img_fs = sorted(glob.glob(osp.join(RGB_SAVE_DIR, SCENE, "*.raw")))
+    ts = [int(int(f.split("_")[-1].split(".")[0])*1e-3) for f in img_fs]
+    return np.array(ts)
+
+
 def rgb_trigger_fix(*nargs):
-    rgb_meta_f = osp.join(RGB_SAVE_DIR, SCENE, "metadata.json")
-    if not osp.exists(rgb_meta_f):
-        return nargs
-    
-    with open(rgb_meta_f, "r") as f:
-        data = json.load(f)
-    
-    if data.get("success_idxs") is None:
+    def check_applicable():
+        img_fs = sorted(glob.glob(osp.join(RGB_SAVE_DIR, SCENE, "*.raw")))
+        parts = osp.basename(img_fs[0]).split("_")
+        return len(parts) == 3
+
+    if not check_applicable():
+        print("rgb timestamps are from previous version, rgb fix unsupported")
         return nargs
 
-    good_idxs = np.array(data["success_idxs"])
-    min_len = min([len(e) for e in nargs])
-    good_idxs = good_idxs[good_idxs < min_len]
+    rgb_ts = get_rgb_ts()
+    raw_diffs = np.diff(rgb_ts)
+    # new_trigs = [np.concatenate([trig[:1], trig[0] + np.cumsum(raw_diffs)]) for trig in nargs]
+    new_trigs = [rgb_ts - rgb_ts[0] + trig[0] for trig in nargs]
 
-    nargs = [e[good_idxs] for e in nargs]
-    return nargs
+    new_nargs = []
+    for i, trig in enumerate(new_trigs):
+        trig = trig[trig <= nargs[i][-1]]
+        new_nargs.append(trig)
+    min_len = min([len(e) for e in new_nargs])
+    new_nargs = [e[:min_len] for e in new_nargs]
+    return new_nargs
+
+
+def check_st_end_gap(st_ts, end_ts):
+    """
+    make sure that the first st_ts trigger and first end_ts subtracted is the exposure time
+    """
+    min_len = min(len(st_ts), len(end_ts))
+    st_ts, end_ts = st_ts[:min_len], end_ts[:min_len]
+    cond = (end_ts - st_ts) > 0
+    st_ts, end_ts = st_ts[cond], end_ts[cond]
+    diffs = end_ts - st_ts
+    med_diff = np.median(diffs)
+    end_ts[0] = st_ts[0] + med_diff
+
+    return st_ts, end_ts
 
 
 def save_alt_trigger_options(inj_ts:np.ndarray, inj_ps:np.ndarray, trig_fold:str):
     st_ts = inj_ts[inj_ps == 1]
     end_ts = inj_ts[inj_ps == 0]
+
+    st_ts, end_ts = check_st_end_gap(st_ts, end_ts)
 
     n_st, n_end = len(st_ts), len(end_ts)
     n_trigs = min(n_st, n_end)
